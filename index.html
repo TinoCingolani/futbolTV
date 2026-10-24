@@ -380,6 +380,11 @@ Cargando datos JSON...
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
+          <!-- Anti-Ads / Popup Blocker Toggle -->
+          <button id="btn-anti-ads" onclick="toggleAntiAds()" title="Modo Anti-Popups (Sandbox): Bloquea anuncios y nuevas pestañas. Clic para desactivar si no carga la señal." class="px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-semibold text-xs flex items-center gap-1.5 transition">
+            <i id="btn-anti-ads-icon" data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+            <span id="anti-ads-label" class="hidden sm:inline">Anti-Ads: ON</span>
+          </button>
           <!-- Refresh player -->
           <button onclick="reloadCurrentStream()" title="Recargar reproductor" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
             <i data-lucide="rotate-cw" class="w-4 h-4"></i>
@@ -428,6 +433,7 @@ Cargando datos JSON...
           class="border-0 block"
           allowfullscreen 
           allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"
           referrerpolicy="no-referrer"
           scrolling="no"
         ></iframe>
@@ -436,8 +442,8 @@ Cargando datos JSON...
       <!-- Player Bottom Advisory & Sandbox notice -->
       <div class="px-3 sm:px-5 py-2 bg-slate-950/90 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 shrink-0">
         <div class="flex items-center gap-2">
-          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 shrink-0"></i>
-          <span>Recomendación: Si el reproductor no carga o muestra publicidad intrusiva, usa el botón <b>"Pestaña Nueva"</b> o prueba otra opción.</span>
+          <i id="anti-ads-advisory-icon" data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+          <span id="anti-ads-advisory-text">Protección <b>Anti-Popups activada</b> por defecto. Si una señal no reproduce, apaga el botón <b>Anti-Ads</b> o usa <b>Pestaña Nueva</b>.</span>
         </div>
         <div class="flex items-center gap-2 font-mono text-slate-500">
           <span id="current-stream-host"></span>
