@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportsHub Live - Eventos & Canales en Vivo</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#ecfeff',
+              400: '#22d3ee',
+              500: '#06b6d4',
+              600: '#0891b2',
+            },
+            dark: {
+              900: '#0a0e17',
+              800: '#111827',
+              700: '#1f2937',
+              600: '#374151'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-[#0a0e17] text-slate-100 flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+  <!-- NAVBAR -->
+  <header class="sticky top-0 z-40 backdrop-blur-xl bg-[#0a0e17]/85 border-b border-white/10 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-4">
+        
+        <!-- Logo & Title -->
+        <div class="flex items-center gap-3">
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-emerald-500 shadow-lg shadow-cyan-500/20">
+            <i data-lucide="tv" class="w-5 h-5 text-black stroke-[2.5]"></i>
+            <span class="absolute -top-1 -right-1 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-cyan-400 bg-clip-text text-transparent">SportsHub Live</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 uppercase tracking-wider">En Vivo</span>
+            </div>
+            <p class="text-xs text-slate-400 hidden sm:block">Frontend para eventos deportivos y canales públicos</p>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-white/5">
+          <button id="tab-events-btn" onclick="switchTab('events')" class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>Eventos Deportivos</span>
+            <span id="badge-events-count" class="px-1.5 py-0.2 rounded-md bg-cyan-500/20 text-cyan-300 text-xs font-semibold">0</span>
+          </button>
+          
+          <button id="tab-channels-btn" onclick="switchTab('channels')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
+            <i data-lucide="radio" class="w-4 h-4"></i>
+            <span>Canales 24/7</span>
+            <span id="badge-channels-count" class="px-1.5 py-0.2 rounded-md bg-slate-800 text-slate-300 text-xs font-semibold">0</span>
+          </button>
+
+          <button id="tab-json-btn" onclick="switchTab('json')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
+            <i data-lucide="code-2" class="w-4 h-4"></i>
+            <span>Explorador JSON</span>
+          </button>
+        </nav>
+
+        <!-- Right Tools -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button onclick="refreshData()" title="Recargar datos del JSON" class="p-2 sm:px-3 sm:py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-xs text-slate-300 flex items-center gap-2 transition hover:border-cyan-500/40">
+            <i data-lucide="rotate-cw" id="refresh-icon" class="w-4 h-4 text-cyan-400"></i>
+            <span class="hidden sm:inline font-medium">Actualizar</span>
+          </button>
+
+          <button onclick="openJsonModal()" title="Ver URL del JSON público" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-xs text-slate-300 flex items-center gap-1.5 transition">
+            <i data-lucide="external-link" class="w-4 h-4 text-slate-400"></i>
+            <span class="hidden lg:inline text-xs">Fuente</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Mobile Tab Switcher -->
+      <div class="flex md:hidden border-t border-white/5 py-2 gap-2 overflow-x-auto">
+        <button onclick="switchTab('events')" id="mob-tab-events-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 text-center whitespace-nowrap">
+          ⚽ Eventos
+        </button>
+        <button onclick="switchTab('channels')" id="mob-tab-channels-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-800/60 text-center whitespace-nowrap">
+          📺 Canales
+        </button>
+        <button onclick="switchTab('json')" id="mob-tab-json-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-800/60 text-center whitespace-nowrap">
+          🔍 JSON Raw
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN WRAPPER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- HERO / BANNER -->
+    <div class="relative rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 p-6 sm:p-8 mb-8 shadow-2xl">
+      <!-- Glow background decoration -->
+      <div class="absolute -top-24 -left-24 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="max-w-2xl">
+          <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-cyan-400 mb-2">
+            <i data-lucide="flame" class="w-4 h-4 text-orange-400"></i>
+            <span>Transmisiones Deportivas & Señales en Vivo</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight mb-2">
+            Agenda deportiva con múltiples reproductores
+          </h1>
+          <p class="text-sm sm:text-base text-slate-400">
+            Conectado directamente al repositorio <a href="https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json" target="_blank" class="text-cyan-400 hover:underline inline-flex items-center gap-1 font-mono text-xs bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50">datos.json <i data-lucide="external-link" class="w-3 h-3"></i></a>. Consulta partidos en vivo, horarios y opciones de stream sin intermediarios.
+          </p>
+        </div>
+
+        <!-- Quick Stats Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 self-stretch md:self-auto shrink-0">
+          <div class="bg-slate-800/80 backdrop-blur border border-white/5 p-3 rounded-xl flex flex-col items-center justify-center text-center">
+            <span id="stat-total-events" class="text-2xl font-bold text-cyan-400">0</span>
+            <span class="text-[11px] text-slate-400 font-medium">Eventos</span>
+          </div>
+          <div class="bg-slate-800/80 backdrop-blur border border-white/5 p-3 rounded-xl flex flex-col items-center justify-center text-center">
+            <span id="stat-total-channels" class="text-2xl font-bold text-emerald-400">0</span>
+            <span class="text-[11px] text-slate-400 font-medium">Canales TV</span>
+          </div>
+          <div class="col-span-2 sm:col-span-1 bg-slate-800/80 backdrop-blur border border-white/5 p-3 rounded-xl flex flex-col items-center justify-center text-center">
+            <span id="stat-live-events" class="text-2xl font-bold text-red-400 flex items-center justify-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+              <span id="stat-live-count">0</span>
+            </span>
+            <span class="text-[11px] text-slate-400 font-medium">En Vivo Hoy</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 1: EVENTOS DEPORTIVOS -->
+    <section id="section-events" class="space-y-6">
+
+      <!-- FILTER & SEARCH BAR -->
+      <div class="bg-slate-900/80 backdrop-blur border border-white/10 rounded-2xl p-4 space-y-4">
+        
+        <!-- Top Row: Search and Status -->
+        <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+          
+          <!-- Search input -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="search-input" 
+              oninput="handleSearch(this.value)" 
+              placeholder="Buscar evento, equipo (Arsenal, Boca, Racing...), competencia o canal..." 
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-950/80 border border-white/10 rounded-xl text-sm placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition text-white"
+            >
+            <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Status Filters (Todos, En Vivo, Próximos, Finalizados) -->
+          <div class="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-white/5 overflow-x-auto text-xs font-medium">
+            <button onclick="setStatusFilter('all')" id="status-all-btn" class="status-btn active px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 whitespace-nowrap">
+              Todos (<span id="count-all">0</span>)
+            </button>
+            <button onclick="setStatusFilter('live')" id="status-live-btn" class="status-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white whitespace-nowrap flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span>
+              En Vivo (<span id="count-live">0</span>)
+            </button>
+            <button onclick="setStatusFilter('upcoming')" id="status-upcoming-btn" class="status-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white whitespace-nowrap">
+              Próximos (<span id="count-upcoming">0</span>)
+            </button>
+            <button onclick="setStatusFilter('past')" id="status-past-btn" class="status-btn px-3 py-1.5 rounded-lg text-slate-400 hover:text-white whitespace-nowrap">
+              Finalizados (<span id="count-past">0</span>)
+            </button>
+          </div>
+
+          <!-- View Mode Toggle -->
+          <div class="hidden sm:flex items-center bg-slate-950/80 p-1 rounded-xl border border-white/5">
+            <button onclick="setViewMode('grid')" id="view-grid-btn" title="Vista en tarjetas" class="p-1.5 rounded-lg bg-slate-800 text-cyan-400">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i>
+            </button>
+            <button onclick="setViewMode('list')" id="view-list-btn" title="Vista en lista compacta" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+              <i data-lucide="list" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Bottom Row: Competitions Chips Filter -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-1 scrollbar-none" id="competitions-bar">
+          <span class="text-xs font-semibold text-slate-400 whitespace-nowrap flex items-center gap-1 mr-1">
+            <i data-lucide="trophy" class="w-3.5 h-3.5 text-yellow-400"></i> Ligas:
+          </span>
+          <!-- Dynamic league chips injected by JS -->
+          <div id="league-chips-container" class="flex items-center gap-1.5"></div>
+        </div>
+
+      </div>
+
+      <!-- RESULTS COUNT & ACTIVE FILTER NOTICE -->
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span id="filtered-results-text">Cargando eventos...</span>
+        <span class="hidden sm:inline">Hora local: <span id="current-clock" class="text-slate-300 font-mono">--:--:--</span></span>
+      </div>
+
+      <!-- EVENTS CONTAINER (GRID/LIST) -->
+      <div id="events-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Skeleton loading placeholders -->
+        <div class="skeleton h-48 rounded-2xl"></div>
+        <div class="skeleton h-48 rounded-2xl"></div>
+        <div class="skeleton h-48 rounded-2xl"></div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="events-empty-state" class="hidden text-center py-16 px-4 bg-slate-900/50 border border-white/5 rounded-2xl">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-400">
+          <i data-lucide="frown" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">No se encontraron eventos</h3>
+        <p class="text-sm text-slate-400 max-w-sm mx-auto mb-4">Intenta cambiar los términos de búsqueda o selecciona otra competencia en los filtros.</p>
+        <button onclick="resetFilters()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold rounded-xl text-xs transition">
+          Restablecer Filtros
+        </button>
+      </div>
+
+    </section>
+
+    <!-- VIEW 2: CANALES 24/7 -->
+    <section id="section-channels" class="hidden space-y-6">
+      
+      <!-- Channels Header & Search -->
+      <div class="bg-slate-900/80 backdrop-blur border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="radio" class="w-5 h-5 text-emerald-400"></i>
+            Canales de Televisión y Transmisión Continua
+          </h2>
+          <p class="text-xs text-slate-400">Señales 24/7 con opciones de visualización directa</p>
+        </div>
+
+        <!-- Filter tabs for channels -->
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1 sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              type="text" 
+              id="channels-search-input" 
+              oninput="handleChannelsSearch(this.value)" 
+              placeholder="Buscar canal..." 
+              class="w-full pl-9 pr-3 py-1.5 bg-slate-950/80 border border-white/10 rounded-xl text-xs placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-white"
+            >
+          </div>
+          <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-white/5 text-xs">
+            <button onclick="setChannelFilter('all')" id="btn-chan-all" class="px-3 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-medium">Todos</button>
+            <button onclick="setChannelFilter('featured')" id="btn-chan-featured" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white">Destacados</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Grid -->
+      <div id="channels-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <!-- Injected via JS -->
+      </div>
+
+    </section>
+
+    <!-- VIEW 3: EXPLORADOR JSON & API RAW -->
+    <section id="section-json" class="hidden space-y-6">
+      
+      <div class="bg-slate-900/80 backdrop-blur border border-white/10 rounded-2xl p-6 space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <i data-lucide="terminal" class="w-5 h-5 text-cyan-400"></i>
+              Explorador de Datos JSON en Vivo
+            </h2>
+            <p class="text-xs text-slate-400">Inspecciona la estructura completa, copia o prueba con otra URL JSON personalizada.</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="copyRawJson()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-xl text-xs text-slate-200 flex items-center gap-1.5 transition">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+              <span>Copiar JSON</span>
+            </button>
+            <button onclick="downloadJsonFile()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-white/10 rounded-xl text-xs text-slate-200 flex items-center gap-1.5 transition">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Descargar .json</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom URL Input Form -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-white/5 space-y-3">
+          <label class="text-xs font-semibold text-slate-300 block">URL de origen del JSON:</label>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input 
+              type="url" 
+              id="custom-json-url" 
+              value="https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json"
+              class="flex-1 px-3 py-2 bg-slate-900 border border-white/10 rounded-lg text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-500"
+            >
+            <button onclick="loadCustomJsonUrl()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5">
+              <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
+              <span>Cargar URL</span>
+            </button>
+            <button onclick="resetDefaultJsonUrl()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg transition">
+              Restaurar Original
+            </button>
+          </div>
+        </div>
+
+        <!-- JSON Inspector Viewer -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span class="font-mono">Estructura del Objeto: <span id="json-size-label" class="text-cyan-400">0 KB</span></span>
+            <span class="text-[11px]">Mostrando datos en formato legible</span>
+          </div>
+
+          <div class="relative bg-slate-950 border border-white/10 rounded-xl p-4 overflow-hidden">
+            <pre id="json-viewer-content" class="text-xs font-mono text-slate-300 max-h-[600px] overflow-auto leading-relaxed select-all">
+Cargando datos JSON...
+            </pre>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/10 bg-[#0a0e17] py-6 mt-12 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <span>SportsHub Frontend • Conectado a <span class="font-mono text-slate-400">tadeoallende/repos-web</span></span>
+      </div>
+      <div>
+        <span>Desarrollado para visualización ágil de eventos y streams</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== STREAM PLAYER MODAL ==================== -->
+  <div id="player-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/90 backdrop-blur-md p-1 sm:p-3 md:p-4 transition-opacity">
+    <div id="player-modal-dialog" class="relative w-full max-w-[96vw] h-[94vh] sm:h-[95vh] max-h-[96vh] bg-slate-900 border border-white/15 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 bg-slate-950/80 border-b border-white/10 shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div id="modal-badge-status" class="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 uppercase">
+            LIVE
+          </div>
+          <div class="truncate">
+            <h3 id="modal-event-title" class="text-sm sm:text-base font-bold text-white truncate">Título del Evento</h3>
+            <p id="modal-event-subtitle" class="text-xs text-slate-400 truncate">Competencia • Fecha</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Refresh player -->
+          <button onclick="reloadCurrentStream()" title="Recargar reproductor" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+          <!-- Theater / Maximize toggle -->
+          <button id="btn-theater-mode" onclick="togglePlayerTheaterMode()" title="Modo teatro / Pantalla completa" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            <i data-lucide="maximize" class="w-4 h-4"></i>
+          </button>
+          <!-- Open direct URL in new tab -->
+          <button onclick="openCurrentStreamExternal()" title="Abrir stream directamente en una nueva pestaña" class="px-2.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-black font-semibold text-xs flex items-center gap-1.5 transition">
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">Pestaña Nueva</span>
+          </button>
+          <!-- Close button -->
+          <button onclick="closePlayerModal()" title="Cerrar reproductor" class="p-2 rounded-lg bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Channel & Stream Options Selectors Bar -->
+      <div class="px-3 sm:px-5 py-2 bg-slate-950/50 border-b border-white/5 flex items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto no-scrollbar">
+        <!-- Multiple channels buttons (e.g. ESPN, Disney+) -->
+        <div id="modal-channel-tabs" class="flex items-center gap-1.5 shrink-0">
+          <!-- Injected via JS -->
+        </div>
+
+        <!-- Stream option buttons (Opción 1, Opción 2...) -->
+        <div id="modal-stream-options" class="flex items-center gap-1.5 shrink-0">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- Video Player Frame -->
+      <div class="relative bg-black flex-1 min-h-0 w-full overflow-hidden flex items-center justify-center">
+        <!-- Loading state overlay -->
+        <div id="player-loading-spinner" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/80 z-10 gap-3">
+          <div class="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-xs text-slate-400 font-medium">Cargando señal...</span>
+        </div>
+
+        <iframe 
+          id="stream-iframe" 
+          src="" 
+          title="Stream Player"
+          class="border-0 block"
+          allowfullscreen 
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          referrerpolicy="no-referrer"
+          scrolling="no"
+        ></iframe>
+      </div>
+
+      <!-- Player Bottom Advisory & Sandbox notice -->
+      <div class="px-3 sm:px-5 py-2 bg-slate-950/90 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400 shrink-0"></i>
+          <span>Recomendación: Si el reproductor no carga o muestra publicidad intrusiva, usa el botón <b>"Pestaña Nueva"</b> o prueba otra opción.</span>
+        </div>
+        <div class="flex items-center gap-2 font-mono text-slate-500">
+          <span id="current-stream-host"></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SOURCE INFO MODAL -->
+  <div id="source-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="bg-slate-900 border border-white/10 rounded-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-white text-base flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-cyan-400"></i>
+          Fuente de Datos
+        </h3>
+        <button onclick="closeSourceModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Los datos son obtenidos directamente en tiempo real desde el archivo público de GitHub:
+      </p>
+      <div class="bg-slate-950 p-3 rounded-xl border border-white/5 break-all text-xs font-mono text-cyan-300">
+        https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json
+      </div>
+      <div class="text-xs text-slate-400 space-y-1">
+        <p>• Los eventos y canales se actualizan automáticamente cuando el archivo fuente en GitHub cambia.</p>
+        <p>• Puedes recargar en cualquier momento usando el botón de actualizar.</p>
+      </div>
+      <div class="pt-2">
+        <a href="https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json" target="_blank" class="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
+          <span>Abrir JSON crudo en el navegador</span>
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SCRIPT -->
+  <script src="app.js"></script>
+</body>
+</html>

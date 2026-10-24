@@ -1,0 +1,13 @@
+{
+  "name": "sports-stream-frontend",
+  "version": "1.0.0",
+  "description": "Frontend interactivo y moderno para explorar eventos deportivos y canales en vivo desde datos.json",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["sports", "streaming", "frontend", "json-viewer", "live-events"],
+  "author": "",
+  "license": "MIT"
+}
