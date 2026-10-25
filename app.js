@@ -498,13 +498,13 @@ function renderEvents() {
             }).length;
 
             cardsHtml.push(`
-              <div class="col-span-full pt-4 pb-2 mt-2 border-b border-amber-500/20 flex items-center justify-between">
+              <div onclick="toggleOtherSportsSection()" class="col-span-full pt-4 pb-2 mt-2 border-b border-amber-500/20 flex items-center justify-between cursor-pointer group hover:border-amber-500/40 transition">
                 <div class="flex items-center gap-2.5">
-                  <span class="p-1.5 rounded-lg ${cat.badgeClass} flex items-center justify-center border">
+                  <span class="p-1.5 rounded-lg ${cat.badgeClass} flex items-center justify-center border group-hover:scale-105 transition">
                     <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
                   </span>
                   <div>
-                    <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">
+                    <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase group-hover:text-amber-300 transition">
                       ${escapeHtml(cat.name)}
                     </h3>
                   </div>
@@ -513,7 +513,7 @@ function renderEvents() {
                   <span class="text-[11px] font-semibold text-slate-400 bg-slate-900 border border-white/5 px-2.5 py-0.5 rounded-full">
                     ${countInCat} eventos
                   </span>
-                  <button onclick="toggleOtherSportsSection()" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold transition cursor-pointer">
+                  <button onclick="event.stopPropagation(); toggleOtherSportsSection()" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold transition cursor-pointer">
                     <span>Plegar</span>
                     <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
                   </button>
@@ -599,6 +599,7 @@ function toggleOtherSportsSection() {
   isOtherSportsExpanded = !isOtherSportsExpanded;
   renderEvents();
 }
+window.toggleOtherSportsSection = toggleOtherSportsSection;
 
 function cleanEventTitle(eventName = '') {
   let cleanName = eventName;
@@ -670,25 +671,25 @@ function renderOtherSportsCollapsedPreview(otherSports, now) {
 
   return `
     <div class="col-span-full my-2 rounded-2xl bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-amber-950/20 border border-amber-500/20 p-3.5 sm:p-4 shadow-lg">
-      <div class="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+      <div onclick="toggleOtherSportsSection()" class="flex items-center justify-between gap-3 pb-3 border-b border-white/10 cursor-pointer group hover:border-amber-500/40 transition">
         <div class="flex items-center gap-2.5 min-w-0">
-          <span class="p-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0">
+          <span class="p-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0 group-hover:scale-105 transition">
             <i data-lucide="flame" class="w-4 h-4"></i>
           </span>
           <div class="min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
-              <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase truncate">
+              <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase truncate group-hover:text-amber-300 transition">
                 Otros Deportes (F1, UFC, Tenis, Boxeo...)
               </h3>
               <span class="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
                 Plegado
               </span>
             </div>
-            <p class="text-[11px] text-slate-400 mt-0.5 hidden sm:block">Sección plegada para priorizar fútbol. Vista previa rápida de eventos:</p>
+            <p class="text-[11px] text-slate-400 mt-0.5 hidden sm:block">Sección plegada para priorizar fútbol. Vista previa rápida de eventos (haz clic para desplegar):</p>
           </div>
         </div>
         
-        <button onclick="toggleOtherSportsSection()" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition hover:scale-[1.02] cursor-pointer">
+        <button onclick="event.stopPropagation(); toggleOtherSportsSection()" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition hover:scale-[1.02] cursor-pointer">
           <span>Ver todos (${otherSports.length})</span>
           <i data-lucide="chevron-down" class="w-4 h-4"></i>
         </button>
