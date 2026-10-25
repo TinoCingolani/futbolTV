@@ -1,5 +1,5 @@
 /**
- * SportsHub Live - Core Application Logic
+ * futbolTV - Core Application Logic
  * Consumes public JSON: https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json
  */
 
@@ -15,6 +15,7 @@ let currentStatus = 'all'; // 'all' | 'live' | 'upcoming' | 'past'
 let currentViewMode = 'grid'; // 'grid' | 'list'
 let channelFilter = 'all'; // 'all' | 'featured'
 let channelSearch = '';
+let isOtherSportsExpanded = false; // Collapsed by default in 'personalizada' view
 
 // Active Player State
 let currentModalContext = {
@@ -198,7 +199,7 @@ function getPersonalizadaCategory(evt) {
     return {
       rank: 0,
       id: 'no-futbol',
-      name: 'Deportes (F1, UFC, Tenis, Boxeo, MLB...)',
+      name: 'Otros Deportes (F1, UFC, Tenis, Boxeo...)',
       icon: 'flame',
       badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30'
     };
@@ -472,7 +473,67 @@ function renderEvents() {
   filtered.forEach(evt => {
     if (currentLeague === 'personalizada') {
       const cat = getPersonalizadaCategory(evt);
-      if (cat && cat.rank !== currentRenderRank) {
+
+      // Special handling for rank 0 (Otros Deportes: F1, UFC, Boxeo, Tenis, etc.)
+      if (cat && cat.rank === 0) {
+        if (!isOtherSportsExpanded) {
+          // Render collapsed preview widget once
+          if (currentRenderRank !== 0) {
+            currentRenderRank = 0;
+            const otherSports = filtered.filter(e => {
+              const c = getPersonalizadaCategory(e);
+              return c && c.rank === 0;
+            });
+            cardsHtml.push(renderOtherSportsCollapsedPreview(otherSports, now));
+          }
+          // Skip individual full cards when collapsed
+          return;
+        } else {
+          // Expanded mode: render header with fold button once
+          if (currentRenderRank !== 0) {
+            currentRenderRank = 0;
+            const countInCat = filtered.filter(e => {
+              const c = getPersonalizadaCategory(e);
+              return c && c.rank === 0;
+            }).length;
+
+            cardsHtml.push(`
+              <div class="col-span-full pt-4 pb-2 mt-2 border-b border-amber-500/20 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <span class="p-1.5 rounded-lg ${cat.badgeClass} flex items-center justify-center border">
+                    <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+                  </span>
+                  <div>
+                    <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase">
+                      ${escapeHtml(cat.name)}
+                    </h3>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-semibold text-slate-400 bg-slate-900 border border-white/5 px-2.5 py-0.5 rounded-full">
+                    ${countInCat} eventos
+                  </span>
+                  <button onclick="toggleOtherSportsSection()" class="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold transition cursor-pointer">
+                    <span>Plegar</span>
+                    <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </div>
+            `);
+          }
+        }
+      } else if (cat && cat.rank !== currentRenderRank) {
+        // If previous section was expanded rank 0, add a compact fold prompt before football categories
+        if (currentRenderRank === 0 && isOtherSportsExpanded) {
+          cardsHtml.push(`
+            <div class="col-span-full flex justify-end pb-1 -mt-1">
+              <button onclick="toggleOtherSportsSection()" class="text-xs text-amber-400 hover:text-amber-300 font-medium inline-flex items-center gap-1 transition cursor-pointer">
+                <span>Plegar sección de Otros Deportes</span>
+                <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          `);
+        }
         currentRenderRank = cat.rank;
         const countInCat = filtered.filter(e => {
           const c = getPersonalizadaCategory(e);
@@ -531,6 +592,121 @@ function renderEvents() {
   container.innerHTML = cardsHtml.join('');
 
   if (window.lucide) lucide.createIcons();
+}
+
+// ================= OTROS DEPORTES COLLAPSIBLE PREVIEW =================
+function toggleOtherSportsSection() {
+  isOtherSportsExpanded = !isOtherSportsExpanded;
+  renderEvents();
+}
+
+function cleanEventTitle(eventName = '') {
+  let cleanName = eventName;
+  if (cleanName.includes(':')) {
+    cleanName = cleanName.substring(cleanName.indexOf(':') + 1).trim();
+  }
+  return cleanName || eventName;
+}
+
+function getSportPreviewBadge(evt) {
+  const text = ((evt.competencia || '') + ' ' + (evt.evento || '')).toLowerCase();
+  if (text.includes('fórmula') || text.includes('formula') || text.includes('f1')) {
+    return { label: 'F1', icon: '🏎️', color: 'text-red-400 bg-red-500/15 border-red-500/30' };
+  }
+  if (text.includes('motogp') || text.includes('moto')) {
+    return { label: 'MotoGP', icon: '🏍️', color: 'text-orange-400 bg-orange-500/15 border-orange-500/30' };
+  }
+  if (text.includes('ufc') || text.includes('mma')) {
+    return { label: 'UFC', icon: '🥊', color: 'text-rose-400 bg-rose-500/15 border-rose-500/30' };
+  }
+  if (text.includes('boxeo') || text.includes('boxing')) {
+    return { label: 'Boxeo', icon: '🥊', color: 'text-amber-400 bg-amber-500/15 border-amber-500/30' };
+  }
+  if (text.includes('tenis') || text.includes('tennis') || text.includes('atp') || text.includes('wta') || text.includes('padel')) {
+    return { label: 'Tenis', icon: '🎾', color: 'text-lime-400 bg-lime-500/15 border-lime-500/30' };
+  }
+  if (text.includes('mlb') || text.includes('béisbol') || text.includes('beisbol') || text.includes('baseball')) {
+    return { label: 'MLB', icon: '⚾', color: 'text-blue-400 bg-blue-500/15 border-blue-500/30' };
+  }
+  if (text.includes('nba') || text.includes('baloncesto') || text.includes('basquet') || text.includes('basketball')) {
+    return { label: 'NBA', icon: '🏀', color: 'text-amber-500 bg-amber-500/15 border-amber-500/30' };
+  }
+  return { label: 'Polideportivo', icon: '🔥', color: 'text-amber-400 bg-amber-500/15 border-amber-500/30' };
+}
+
+function renderOtherSportsCollapsedPreview(otherSports, now) {
+  const maxPreview = 4;
+  const previewList = otherSports.slice(0, maxPreview);
+  const remainingCount = Math.max(0, otherSports.length - maxPreview);
+
+  const previewItemsHtml = previewList.map(evt => {
+    const status = getEventStatus(evt.fecha, now);
+    const formattedTime = formatEventTime(evt.fecha);
+    const sportBadge = getSportPreviewBadge(evt);
+    const isLive = status === 'live';
+
+    return `
+      <div onclick="openEventPlayer(${evt.id})" class="group flex items-center justify-between gap-2.5 p-2.5 rounded-xl bg-slate-950/70 hover:bg-slate-800/90 border border-white/5 hover:border-amber-500/40 transition cursor-pointer">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${sportBadge.color} whitespace-nowrap shrink-0 flex items-center gap-1">
+            <span>${sportBadge.icon}</span> ${sportBadge.label}
+          </span>
+          <span class="text-xs font-semibold text-slate-200 truncate group-hover:text-amber-300 transition" title="${escapeHtml(evt.evento)}">
+            ${escapeHtml(cleanEventTitle(evt.evento))}
+          </span>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          ${isLive ? '<span class="flex h-2 w-2 relative shrink-0"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>' : ''}
+          <span class="text-[11px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-white/5 whitespace-nowrap">
+            ${formattedTime}
+          </span>
+          <span class="p-1 rounded-lg bg-amber-500/10 text-amber-400 group-hover:bg-amber-500 group-hover:text-black transition">
+            <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="col-span-full my-2 rounded-2xl bg-gradient-to-br from-slate-900/95 via-slate-900/85 to-amber-950/20 border border-amber-500/20 p-3.5 sm:p-4 shadow-lg">
+      <div class="flex items-center justify-between gap-3 pb-3 border-b border-white/10">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span class="p-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0">
+            <i data-lucide="flame" class="w-4 h-4"></i>
+          </span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase truncate">
+                Otros Deportes (F1, UFC, Tenis, Boxeo...)
+              </h3>
+              <span class="text-[10px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                Plegado
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5 hidden sm:block">Sección plegada para priorizar fútbol. Vista previa rápida de eventos:</p>
+          </div>
+        </div>
+        
+        <button onclick="toggleOtherSportsSection()" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-300 text-xs font-bold transition hover:scale-[1.02] cursor-pointer">
+          <span>Ver todos (${otherSports.length})</span>
+          <i data-lucide="chevron-down" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-2 mt-3">
+        ${previewItemsHtml}
+      </div>
+
+      <div class="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+        <span>Mostrando <b>${previewList.length}</b> de <b>${otherSports.length}</b> eventos</span>
+        <button onclick="toggleOtherSportsSection()" class="text-amber-400 hover:text-amber-300 font-semibold inline-flex items-center gap-1 transition cursor-pointer">
+          <span>${remainingCount > 0 ? `Desplegar ${remainingCount} más` : 'Desplegar todos'}</span>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  `;
 }
 
 // Card View Template

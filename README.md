@@ -1,4 +1,4 @@
-# ⚽ SportsHub Live - Frontend para datos.json
+# ⚽ futbolTV - Frontend para datos.json
 
 Frontend web moderno, interactivo y responsivo para explorar, filtrar y reproducir las transmisiones de eventos deportivos y canales en vivo provistos en el JSON público de:
 `https://raw.githubusercontent.com/tadeoallende/repos-web/refs/heads/main/datos.json`
