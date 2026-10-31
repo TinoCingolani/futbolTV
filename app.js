@@ -32,9 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   initClock();
   fetchData();
 
+  document.addEventListener('click', (e) => {
+    const menu = document.getElementById('advanced-menu');
+    if (menu && !menu.contains(e.target)) closeAdvancedMenu();
+  });
+
   // Keyboard shortcut: Escape closes modal
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      closeAdvancedMenu();
       closePlayerModal();
       closeSourceModal();
     }
@@ -1083,6 +1089,7 @@ function showPlayerModal() {
   const modal = document.getElementById('player-modal');
   setText('modal-event-title', currentModalContext.title);
   setText('modal-event-subtitle', currentModalContext.subtitle);
+  setText('player-help-text', 'Si el video no empieza, probá otra señal. También podés recargar o usar Pestaña Nueva.');
 
   // Iniciar activado por defecto cada vez que se abre el reproductor
   isAntiAdsActive = true;
@@ -1191,6 +1198,7 @@ function switchModalStreamOption(optIdx) {
 }
 
 function loadCurrentStreamIntoPlayer() {
+  setText('player-help-text', 'Si el video no empieza, probá otra señal. También podés recargar o usar Pestaña Nueva.');
   const iframe = document.getElementById('stream-iframe');
   const spinner = document.getElementById('player-loading-spinner');
   const hostLabel = document.getElementById('current-stream-host');
@@ -1228,6 +1236,31 @@ function loadCurrentStreamIntoPlayer() {
     };
     iframe.src = streamUrl;
   }
+}
+
+function tryNextStream() {
+  const alternatives = [];
+  const seenUrls = new Set();
+  currentModalContext.channels.forEach((channel, channelIndex) => {
+    (channel.options || []).forEach((option, optionIndex) => {
+      if (!option.iframe || seenUrls.has(option.iframe)) return;
+      seenUrls.add(option.iframe);
+      alternatives.push({ channelIndex, optionIndex, url: option.iframe });
+    });
+  });
+  const currentIndex = alternatives.findIndex(item => item.url === currentModalContext.currentStreamUrl);
+  const next = alternatives[(currentIndex + 1) % alternatives.length];
+  if (!next || next.url === currentModalContext.currentStreamUrl) {
+    setText('player-help-text', 'No hay otra señal disponible. Probá recargar o usar Pestaña Nueva.');
+    return;
+  }
+  currentModalContext.selectedChannelIndex = next.channelIndex;
+  currentModalContext.selectedOptionIndex = next.optionIndex;
+  renderModalChannelsTabs();
+  renderModalStreamOptions();
+  loadCurrentStreamIntoPlayer();
+  const channel = currentModalContext.channels[next.channelIndex];
+  setText('player-help-text', `Probando ${channel.name || 'canal'} · ${channel.options[next.optionIndex].name || `Opción ${next.optionIndex + 1}`}. Si no reproduce, podés probar otra señal.`);
 }
 
 function reloadCurrentStream() {
@@ -1375,7 +1408,13 @@ function setChannelFilter(filter) {
 }
 
 // ================= TAB SWITCHING =================
+function closeAdvancedMenu() {
+  const menu = document.getElementById('advanced-menu');
+  if (menu) menu.open = false;
+}
+
 function switchTab(tab) {
+  closeAdvancedMenu();
   activeTab = tab;
 
   // Sections
@@ -1400,7 +1439,8 @@ function switchTab(tab) {
 
   updateTabBtn('tab-events-btn', tab === 'events');
   updateTabBtn('tab-channels-btn', tab === 'channels');
-  updateTabBtn('tab-json-btn', tab === 'json');
+  const jsonBtn = document.getElementById('tab-json-btn');
+  if (jsonBtn) jsonBtn.className = `w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-white/10 ${tab === 'json' ? 'text-cyan-400 bg-cyan-500/10' : 'text-slate-300'}`;
 
   // Mobile buttons styling
   const updateMobTabBtn = (btnId, isActive) => {
@@ -1415,7 +1455,6 @@ function switchTab(tab) {
 
   updateMobTabBtn('mob-tab-events-btn', tab === 'events');
   updateMobTabBtn('mob-tab-channels-btn', tab === 'channels');
-  updateMobTabBtn('mob-tab-json-btn', tab === 'json');
 
   if (tab === 'json') {
     renderJsonViewer();
@@ -1426,6 +1465,7 @@ function switchTab(tab) {
 
 // ================= SOURCE MODAL =================
 function openJsonModal() {
+  closeAdvancedMenu();
   const modal = document.getElementById('source-modal');
   if (modal) modal.classList.remove('hidden');
 }

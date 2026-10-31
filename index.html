@@ -73,10 +73,6 @@
             <span id="badge-channels-count" class="px-1.5 py-0.2 rounded-md bg-slate-800 text-slate-300 text-xs font-semibold">0</span>
           </button>
 
-          <button id="tab-json-btn" onclick="switchTab('json')" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-slate-400 hover:text-white hover:bg-white/5">
-            <i data-lucide="code-2" class="w-4 h-4"></i>
-            <span>Explorador JSON</span>
-          </button>
         </nav>
 
         <!-- Right Tools -->
@@ -86,10 +82,13 @@
             <span class="hidden sm:inline font-medium">Actualizar</span>
           </button>
 
-          <button onclick="openJsonModal()" title="Ver URL del JSON público" class="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-xs text-slate-300 flex items-center gap-1.5 transition">
-            <i data-lucide="external-link" class="w-4 h-4 text-slate-400"></i>
-            <span class="hidden lg:inline text-xs">Fuente</span>
-          </button>
+          <details id="advanced-menu" class="relative">
+            <summary class="cursor-pointer list-none px-3 py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-white/10 text-xs text-slate-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">Avanzado ▾</summary>
+            <div class="absolute right-0 mt-2 w-48 p-1.5 rounded-xl bg-slate-900 border border-white/10 shadow-xl">
+              <button id="tab-json-btn" onclick="switchTab('json')" class="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-white/10">Explorador JSON</button>
+              <button onclick="openJsonModal()" class="w-full text-left px-3 py-2 rounded-lg text-sm text-slate-300 hover:bg-white/10">Fuente de datos</button>
+            </div>
+          </details>
         </div>
 
       </div>
@@ -101,9 +100,6 @@
         </button>
         <button onclick="switchTab('channels')" id="mob-tab-channels-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-800/60 text-center whitespace-nowrap">
           📺 Canales
-        </button>
-        <button onclick="switchTab('json')" id="mob-tab-json-btn" class="flex-1 py-1.5 px-3 rounded-lg text-xs font-medium text-slate-400 bg-slate-800/60 text-center whitespace-nowrap">
-          🔍 JSON Raw
         </button>
       </div>
 
@@ -414,6 +410,11 @@ Cargando datos JSON...
         </div>
       </div>
 
+      <div class="px-3 sm:px-5 py-2 bg-slate-950/50 border-b border-white/5 flex flex-wrap items-center gap-2 shrink-0">
+        <button onclick="tryNextStream()" class="px-3 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">¿No reproduce? Probar otra señal</button>
+        <p id="player-help-text" role="status" class="text-xs text-slate-300">Si el video no empieza, probá otra señal. También podés recargar o usar Pestaña Nueva.</p>
+      </div>
+
       <!-- Video Player Frame -->
       <div class="relative bg-black flex-1 min-h-0 w-full overflow-hidden flex items-center justify-center">
         <!-- Loading state overlay -->
@@ -481,6 +482,6 @@ Cargando datos JSON...
   </div>
 
   <!-- APP SCRIPT -->
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
