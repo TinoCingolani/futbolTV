@@ -1037,8 +1037,6 @@ let isAntiAdsActive = true;
 
 function updateAntiAdsButtonUI() {
   const btn = document.getElementById('btn-anti-ads');
-  const advisoryIcon = document.getElementById('anti-ads-advisory-icon');
-  const advisoryText = document.getElementById('anti-ads-advisory-text');
 
   if (!btn) return;
 
@@ -1049,13 +1047,6 @@ function updateAntiAdsButtonUI() {
       <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
       <span id="anti-ads-label" class="hidden sm:inline">Anti-Ads: ON</span>
     `;
-    if (advisoryIcon) {
-      advisoryIcon.setAttribute('data-lucide', 'shield-check');
-      advisoryIcon.className = 'w-4 h-4 text-emerald-400 shrink-0';
-    }
-    if (advisoryText) {
-      advisoryText.innerHTML = 'Protección <b>Anti-Popups activada</b> por defecto. Si una señal no reproduce, apaga el botón <b>Anti-Ads</b> o usa <b>Pestaña Nueva</b>.';
-    }
   } else {
     btn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 border border-white/5 font-semibold text-xs flex items-center gap-1.5 transition';
     btn.title = 'Modo Anti-Popups desactivado: Sin restricciones de sandbox. Clic para activar bloqueo de anuncios.';
@@ -1063,13 +1054,6 @@ function updateAntiAdsButtonUI() {
       <i data-lucide="shield-off" class="w-3.5 h-3.5"></i>
       <span id="anti-ads-label" class="hidden sm:inline">Anti-Ads: OFF</span>
     `;
-    if (advisoryIcon) {
-      advisoryIcon.setAttribute('data-lucide', 'shield-alert');
-      advisoryIcon.className = 'w-4 h-4 text-amber-400 shrink-0';
-    }
-    if (advisoryText) {
-      advisoryText.innerHTML = 'Modo Anti-Popups <b>apagado</b>. El reproductor corre sin restricciones de sandbox.';
-    }
   }
 
   if (window.lucide) lucide.createIcons();
@@ -1201,7 +1185,6 @@ function loadCurrentStreamIntoPlayer() {
   setText('player-help-text', 'Si el video no empieza, probá otra señal. También podés recargar o usar Pestaña Nueva.');
   const iframe = document.getElementById('stream-iframe');
   const spinner = document.getElementById('player-loading-spinner');
-  const hostLabel = document.getElementById('current-stream-host');
 
   const currentChannel = currentModalContext.channels[currentModalContext.selectedChannelIndex];
   const currentOption = currentChannel?.options?.[currentModalContext.selectedOptionIndex];
@@ -1213,13 +1196,6 @@ function loadCurrentStreamIntoPlayer() {
 
   const streamUrl = currentOption.iframe;
   currentModalContext.currentStreamUrl = streamUrl;
-
-  try {
-    const host = new URL(streamUrl).hostname;
-    if (hostLabel) hostLabel.textContent = `Servidor: ${host}`;
-  } catch {
-    if (hostLabel) hostLabel.textContent = '';
-  }
 
   if (iframe) {
     if (isAntiAdsActive) {
@@ -1252,6 +1228,7 @@ function tryNextStream() {
   const next = alternatives[(currentIndex + 1) % alternatives.length];
   if (!next || next.url === currentModalContext.currentStreamUrl) {
     setText('player-help-text', 'No hay otra señal disponible. Probá recargar o usar Pestaña Nueva.');
+    showNotification('No hay otra señal disponible. Probá recargar o usar Pestaña Nueva.', 'info');
     return;
   }
   currentModalContext.selectedChannelIndex = next.channelIndex;

@@ -398,7 +398,7 @@ Cargando datos JSON...
       </div>
 
       <!-- Channel & Stream Options Selectors Bar -->
-      <div class="px-3 sm:px-5 py-2 bg-slate-950/50 border-b border-white/5 flex items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto no-scrollbar">
+      <div class="px-3 sm:px-5 py-2 bg-slate-950/50 border-b border-white/5 flex items-center gap-2 text-xs shrink-0 overflow-x-auto no-scrollbar">
         <!-- Multiple channels buttons (e.g. ESPN, Disney+) -->
         <div id="modal-channel-tabs" class="flex items-center gap-1.5 shrink-0">
           <!-- Injected via JS -->
@@ -408,12 +408,9 @@ Cargando datos JSON...
         <div id="modal-stream-options" class="flex items-center gap-1.5 shrink-0">
           <!-- Injected via JS -->
         </div>
+        <button onclick="tryNextStream()" title="¿No reproduce? Probar otra señal" class="ml-auto shrink-0 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">Probar otra señal</button>
       </div>
-
-      <div class="px-3 sm:px-5 py-2 bg-slate-950/50 border-b border-white/5 flex flex-wrap items-center gap-2 shrink-0">
-        <button onclick="tryNextStream()" class="px-3 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black text-xs font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-white">¿No reproduce? Probar otra señal</button>
-        <p id="player-help-text" role="status" class="text-xs text-slate-300">Si el video no empieza, probá otra señal. También podés recargar o usar Pestaña Nueva.</p>
-      </div>
+      <p id="player-help-text" role="status" class="sr-only"></p>
 
       <!-- Video Player Frame -->
       <div class="relative bg-black flex-1 min-h-0 w-full overflow-hidden flex items-center justify-center">
@@ -434,17 +431,6 @@ Cargando datos JSON...
           referrerpolicy="no-referrer"
           scrolling="no"
         ></iframe>
-      </div>
-
-      <!-- Player Bottom Advisory & Sandbox notice -->
-      <div class="px-3 sm:px-5 py-2 bg-slate-950/90 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-400 shrink-0">
-        <div class="flex items-center gap-2">
-          <i id="anti-ads-advisory-icon" data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-          <span id="anti-ads-advisory-text">Protección <b>Anti-Popups activada</b> por defecto. Si una señal no reproduce, apaga el botón <b>Anti-Ads</b> o usa <b>Pestaña Nueva</b>.</span>
-        </div>
-        <div class="flex items-center gap-2 font-mono text-slate-500">
-          <span id="current-stream-host"></span>
-        </div>
       </div>
 
     </div>
@@ -482,6 +468,6 @@ Cargando datos JSON...
   </div>
 
   <!-- APP SCRIPT -->
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
